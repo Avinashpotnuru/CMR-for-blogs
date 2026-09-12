@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Mini Blog — The Journal
 
-## Getting Started
+A premium editorial blog with a full admin "control room": MongoDB-backed CMS, RHF/Zod forms, base-ui primitives, and an automated trend-draft pipeline (Hacker News + Google Trends).
 
-First, run the development server:
+Public journal lives at `/blog` (light editorial theme); admin lives at `/admin` (dark).
+
+## Tech stack
+
+- **Next.js 16** (App Router) + React 19 + TypeScript
+- **Tailwind CSS v4** with design tokens (three-layer: primitive → semantic → component)
+- **MongoDB** (official driver, cached singleton) for posts
+- **base-ui** for primitives (select, alerts, etc.); **react-hook-form + Zod** for forms
+- **Vercel** deployment config included (`vercel.json`)
+
+## Getting started
 
 ```bash
+npm install
+# create .env.local with MONGODB_URI (see table below)
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000). The journal is at `/blog`, the control room at `/admin`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Variable            | Required | Description                                                        |
+| ------------------- | -------- | ------------------------------------------------------------------ |
+| `MONGODB_URI`       | yes      | MongoDB connection string                                          |
+| `MONGODB_DB`        | no       | Database name (defaults to `blog`)                                 |
+| `TRENDS_CRON_SECRET`| no       | Protects the trend-refresh endpoint when set                        |
+| `TRENDS_COUNT`      | no       | Number of drafts to generate (default `6`, 60% HN / 40% Trends)     |
+| `TRENDS_REBUILD`    | no       | Comma-separated slugs to overwrite with fresh content               |
+| `BLOG_URL`          | no       | Canonical blog base URL used by the trend pipeline                  |
 
-## Learn More
+## Scripts
 
-To learn more about Next.js, take a look at the following resources:
+| Command            | Description                                                   |
+| ------------------ | ------------------------------------------------------------- |
+| `npm run dev`      | Start the dev server                                          |
+| `npm run build`    | Production build                                              |
+| `npm run start`    | Start the production server                                   |
+| `npm run lint`     | ESLint                                                        |
+| `npm run trends`   | Generate trend drafts directly against Mongo (see `scripts/trends.mjs`) |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## API routes
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Route                      | Methods        | Notes                                            |
+| -------------------------- | -------------- | ------------------------------------------------ |
+| `/api/posts`               | GET, POST      | List / create posts                              |
+| `/api/posts/[id]`          | GET, PATCH, DELETE | Read, update (incl. status), delete          |
+| `/api/trends/refresh`      | GET, POST      | Generate drafts; `?count=`, `?rebuild=<slug>`, optional `?secret=` |
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The trend pipeline (`src/lib/trends.ts`) is fully data-driven — no external AI key required. It pulls trending stories, enriches them with community comments, and writes structured editorial briefs (FIELD BRIEF kicker, THE STORY / WHY IT MATTERS / WHAT THE COMMUNITY IS SAYING sections, etc.). Run it via `npm run trends`, schedule a cron against `/api/trends/refresh`, or rebuild individual posts with `?rebuild=<slug>`.
