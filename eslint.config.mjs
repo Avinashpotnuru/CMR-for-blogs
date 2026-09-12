@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Tooling/config folders (not project code):
+    ".opencode/**",
+    ".qodo/**",
   ]),
 ]);
 
