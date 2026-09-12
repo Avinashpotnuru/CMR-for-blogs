@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Globe, LayoutDashboard, Newspaper } from "lucide-react"
+import { Globe, LayoutDashboard, LogOut, Newspaper } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const navLinks = [
@@ -66,6 +66,13 @@ export function AdminSidebar({ className }: { className?: string }) {
         >
           <Globe className="size-4" aria-hidden />
           View blog
+        </Link>
+        <Link
+          href="/api/auth/logout"
+          className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-destructive transition-colors duration-150 hover:bg-destructive/10"
+        >
+          <LogOut className="size-4" aria-hidden />
+          Sign out
         </Link>
       </div>
     </aside>
