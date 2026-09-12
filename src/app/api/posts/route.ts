@@ -1,4 +1,5 @@
 import { ObjectId, type WithId } from "mongodb"
+import { revalidatePath } from "next/cache"
 import { getCollection } from "@/lib/mongodb"
 import {
   BlogStatusSchema,
@@ -73,6 +74,8 @@ export async function POST(request: Request) {
     }
 
     await collection.insertOne(doc)
+
+    revalidatePath("/blog", "layout")
 
     return Response.json({ post: toPost(doc) }, { status: 201 })
   } catch {

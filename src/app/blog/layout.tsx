@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { SiteHeader } from "@/components/blog/site-header"
+import { FooterYear } from "@/components/blog/footer-year"
 
 export default function BlogLayout({
   children,
@@ -86,7 +87,7 @@ export default function BlogLayout({
                 </a>
               </p>
               <p className="mt-2 text-label text-muted-foreground">
-                © {new Date().getFullYear()}
+                <FooterYear />
               </p>
             </div>
           </div>

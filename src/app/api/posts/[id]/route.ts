@@ -1,4 +1,5 @@
 import { ObjectId, type WithId } from "mongodb"
+import { revalidatePath } from "next/cache"
 import { getCollection } from "@/lib/mongodb"
 import { UpdatePostSchema, type CreatePostInput } from "@/lib/validation/post"
 
@@ -95,6 +96,8 @@ export async function PATCH(
     return Response.json({ error: "Post not found" }, { status: 404 })
   }
 
+  revalidatePath("/blog", "layout")
+
   return Response.json({ post: toPost(updated) })
 }
 
@@ -114,6 +117,8 @@ export async function DELETE(
   if (result.deletedCount === 0) {
     return Response.json({ error: "Post not found" }, { status: 404 })
   }
+
+  revalidatePath("/blog", "layout")
 
   return Response.json({ success: true })
 }

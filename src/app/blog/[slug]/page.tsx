@@ -10,8 +10,26 @@ import type { CreatePostInput } from "@/lib/validation/post"
 import { ReadingProgress } from "@/components/blog/reading-progress"
 import { SplitReveal } from "@/components/blog/split-reveal"
 import { formatArticleDate, padIndex, readingTime } from "@/lib/format"
+import {
+  AUTHOR_NAME,
+  AUTHOR_URL,
+  SITE_NAME,
+  SITE_URL,
+} from "@/lib/site"
 
-export const dynamic = "force-dynamic"
+export const revalidate = 300
+
+export async function generateStaticParams() {
+  try {
+    const collection = await getCollection("blogs")
+    const slugs = await collection
+      .find({ status: "published" }, { projection: { slug: 1, _id: 0 } })
+      .toArray()
+    return slugs.map(({ slug }) => ({ slug }))
+  } catch {
+    return []
+  }
+}
 
 type BlogPostDoc = CreatePostInput & {
   _id: ObjectId
@@ -117,9 +135,32 @@ export async function generateMetadata({
     return { title: "Post Not Found" }
   }
 
+  const url = `${SITE_URL}/blog/${post.slug}`
+
   return {
     title: post.title,
     description: post.excerpt,
+    alternates: {
+      canonical: url,
+    },
+    openGraph: {
+      type: "article",
+      url,
+      siteName: SITE_NAME,
+      title: post.title,
+      description: post.excerpt,
+      publishedTime: new Date(post.createdAt).toISOString(),
+      modifiedTime: new Date(post.updatedAt).toISOString(),
+      authors: [AUTHOR_URL],
+      images: [`${SITE_URL}/opengraph-image`],
+      locale: "en_US",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description: post.excerpt,
+      images: [`${SITE_URL}/opengraph-image`],
+    },
   }
 }
 
@@ -145,8 +186,40 @@ export default async function BlogPostPage({ params }: BlogPostPageParams) {
   const showDropCap =
     lead.length > 160 && /^[a-zA-Z]/.test(lead.trim())
 
+  const url = `${SITE_URL}/blog/${post.slug}`
+
+  const jsonLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: post.title,
+    description: post.excerpt,
+    image: `${SITE_URL}/opengraph-image`,
+    author: {
+      "@type": "Person",
+      name: AUTHOR_NAME,
+      url: AUTHOR_URL,
+    },
+    publisher: {
+      "@type": "Person",
+      name: AUTHOR_NAME,
+      url: AUTHOR_URL,
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": url,
+    },
+    datePublished: new Date(post.updatedAt).toISOString(),
+    dateModified: new Date(post.updatedAt).toISOString(),
+    wordCount,
+    inLanguage: "en",
+  }
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <ReadingProgress />
 
       <article className="mx-auto w-full max-w-6xl px-4 pt-12 sm:px-6 md:pt-16 lg:px-8">

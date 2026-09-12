@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache"
 import { rebuildTrend, refreshTrends } from "@/lib/trends"
 
 export const dynamic = "force-dynamic"
@@ -28,6 +29,7 @@ async function handle(request: Request) {
           { status: 404 },
         )
       }
+      revalidatePath("/blog", "layout")
       return Response.json(result)
     }
 
@@ -36,6 +38,7 @@ async function handle(request: Request) {
       Math.max(1, Number(url.searchParams.get("count")) || 6),
     )
     const result = await refreshTrends(count)
+    revalidatePath("/blog", "layout")
     return Response.json(result)
   } catch (error) {
     return Response.json(

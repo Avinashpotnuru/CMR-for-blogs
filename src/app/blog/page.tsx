@@ -9,13 +9,30 @@ import { Reveal } from "@/components/blog/reveal"
 import { HeroParallax } from "@/components/blog/hero-parallax"
 import { SplitReveal } from "@/components/blog/split-reveal"
 import { formatListDate, padIndex, readingTime } from "@/lib/format"
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site"
 
 export const metadata: Metadata = {
-  title: "Blog",
-  description: "Stories and updates from our team.",
+  title: "The Journal",
+  description: SITE_DESCRIPTION,
+  alternates: {
+    canonical: "/blog",
+  },
+  openGraph: {
+    type: "website",
+    url: `${SITE_URL}/blog`,
+    siteName: SITE_NAME,
+    title: "The Journal | Mini Blog",
+    description: SITE_DESCRIPTION,
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "The Journal | Mini Blog",
+    description: SITE_DESCRIPTION,
+  },
 }
 
-export const dynamic = "force-dynamic"
+export const revalidate = 300
 
 const HERO_TITLE: { word: string; accent?: boolean }[] = [
   { word: "Notes" },
