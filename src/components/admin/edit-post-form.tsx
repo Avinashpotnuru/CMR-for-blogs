@@ -31,6 +31,10 @@ export function EditPostForm({ postId, post }: EditPostFormProps) {
       body: JSON.stringify(values),
     })
 
+    if (res.status === 401) {
+      window.location.assign("/admin/login?next=" + encodeURIComponent(`/admin/posts/${postId}`))
+    }
+
     if (!res.ok) {
       throw new Error("Failed to update post")
     }

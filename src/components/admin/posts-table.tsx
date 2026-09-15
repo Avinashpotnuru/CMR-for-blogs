@@ -41,10 +41,18 @@ import type { Post } from "@/lib/validation/post"
 
 const PAGE_SIZE = 8
 
+const LOGIN_URL = "/admin/login?next=" + encodeURIComponent("/admin/posts")
+
 type SortKey = "title" | "category" | "status" | "created"
 type SortState = { key: SortKey; dir: "asc" | "desc" }
 
 type StatusFilter = "all" | "draft" | "published"
+
+function redirectIfUnauthorized(res: Response) {
+  if (res.status === 401) {
+    window.location.assign(LOGIN_URL)
+  }
+}
 
 function StatusToggle({
   post,
@@ -70,6 +78,7 @@ function StatusToggle({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: next ? "published" : "draft" }),
       })
+      redirectIfUnauthorized(res)
       if (!res.ok) throw new Error("Failed to update status")
       onChanged()
     } catch {
@@ -184,6 +193,7 @@ export function PostsTable() {
 
   async function fetchPosts(): Promise<Post[]> {
     const res = await fetch("/api/posts")
+    redirectIfUnauthorized(res)
     if (!res.ok) throw new Error("Failed to fetch posts")
     const data = await res.json()
     return data.posts ?? []
@@ -225,6 +235,7 @@ export function PostsTable() {
       const res = await fetch(`/api/posts/${target._id}`, {
         method: "DELETE",
       })
+      redirectIfUnauthorized(res)
       if (!res.ok) throw new Error("Failed to delete post")
       setTarget(null)
       setSelected((prev) => {
@@ -248,6 +259,7 @@ export function PostsTable() {
       await Promise.all(
         [...selected].map(async (id) => {
           const res = await fetch(`/api/posts/${id}`, { method: "DELETE" })
+          redirectIfUnauthorized(res)
           if (!res.ok) throw new Error("Failed to delete post")
         }),
       )
@@ -273,6 +285,7 @@ export function PostsTable() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ status }),
           })
+          redirectIfUnauthorized(res)
           if (!res.ok) throw new Error("Failed to update status")
         }),
       )
