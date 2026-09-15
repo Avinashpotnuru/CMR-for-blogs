@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import {
   ArrowDown,
   ArrowUp,
@@ -46,13 +47,13 @@ const LOGIN_URL = "/admin/login?next=" + encodeURIComponent("/admin/posts")
 type SortKey = "title" | "category" | "status" | "created"
 type SortState = { key: SortKey; dir: "asc" | "desc" }
 
-type StatusFilter = "all" | "draft" | "published"
-
-function redirectIfUnauthorized(res: Response) {
+function redirectIfUnauthorized(res: Response, router: ReturnType<typeof useRouter>) {
   if (res.status === 401) {
-    window.location.assign(LOGIN_URL)
+    router.push(LOGIN_URL)
   }
 }
+
+type StatusFilter = "all" | "draft" | "published"
 
 function StatusToggle({
   post,
@@ -64,6 +65,7 @@ function StatusToggle({
   const [published, setPublished] = useState(post.status === "published")
   const [busy, setBusy] = useState(false)
   const [failed, setFailed] = useState(false)
+  const router = useRouter()
 
   async function toggle() {
     if (busy) return
@@ -78,7 +80,7 @@ function StatusToggle({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: next ? "published" : "draft" }),
       })
-      redirectIfUnauthorized(res)
+      redirectIfUnauthorized(res, router)
       if (!res.ok) throw new Error("Failed to update status")
       onChanged()
     } catch {
@@ -174,6 +176,7 @@ function TableSkeleton() {
 
 export function PostsTable() {
   const [posts, setPosts] = useState<Post[]>([])
+  const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [target, setTarget] = useState<Post | null>(null)
@@ -193,7 +196,7 @@ export function PostsTable() {
 
   async function fetchPosts(): Promise<Post[]> {
     const res = await fetch("/api/posts")
-    redirectIfUnauthorized(res)
+    redirectIfUnauthorized(res, router)
     if (!res.ok) throw new Error("Failed to fetch posts")
     const data = await res.json()
     return data.posts ?? []
@@ -235,7 +238,7 @@ export function PostsTable() {
       const res = await fetch(`/api/posts/${target._id}`, {
         method: "DELETE",
       })
-      redirectIfUnauthorized(res)
+      redirectIfUnauthorized(res, router)
       if (!res.ok) throw new Error("Failed to delete post")
       setTarget(null)
       setSelected((prev) => {
@@ -259,7 +262,7 @@ export function PostsTable() {
       await Promise.all(
         [...selected].map(async (id) => {
           const res = await fetch(`/api/posts/${id}`, { method: "DELETE" })
-          redirectIfUnauthorized(res)
+          redirectIfUnauthorized(res, router)
           if (!res.ok) throw new Error("Failed to delete post")
         }),
       )
@@ -285,7 +288,7 @@ export function PostsTable() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ status }),
           })
-          redirectIfUnauthorized(res)
+          redirectIfUnauthorized(res, router)
           if (!res.ok) throw new Error("Failed to update status")
         }),
       )

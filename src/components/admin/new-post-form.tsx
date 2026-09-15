@@ -27,7 +27,7 @@ export function NewPostForm() {
     })
 
     if (res.status === 401) {
-      window.location.assign("/admin/login?next=" + encodeURIComponent("/admin/posts/new"))
+      router.push("/admin/login?next=" + encodeURIComponent("/admin/posts/new"))
     }
 
     if (!res.ok) {

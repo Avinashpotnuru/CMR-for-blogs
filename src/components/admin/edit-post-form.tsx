@@ -32,7 +32,7 @@ export function EditPostForm({ postId, post }: EditPostFormProps) {
     })
 
     if (res.status === 401) {
-      window.location.assign("/admin/login?next=" + encodeURIComponent(`/admin/posts/${postId}`))
+      router.push("/admin/login?next=" + encodeURIComponent(`/admin/posts/${postId}`))
     }
 
     if (!res.ok) {
