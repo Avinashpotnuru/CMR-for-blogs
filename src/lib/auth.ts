@@ -90,7 +90,7 @@ export async function verifySession(
 
 export function sessionCookieHeader(token: string): string {
   const base = `${SESSION_COOKIE}=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${Math.floor(SESSION_TTL_MS / 1000)}`
-  return process.env.NODE_ENV === "production" ? `${base}; Secure` : base
+  return process.env.VERCEL === "true" ? `${base}; Secure` : base
 }
 
 export function clearSessionCookieHeader(): string {

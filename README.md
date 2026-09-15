@@ -27,11 +27,16 @@ Open [http://localhost:3000](http://localhost:3000). The journal is at `/blog`, 
 | Variable            | Required | Description                                                        |
 | ------------------- | -------- | ------------------------------------------------------------------ |
 | `MONGODB_URI`       | yes      | MongoDB connection string                                          |
+| `ADMIN_EMAIL`       | yes*     | Email used to sign in to the admin control room                    |
+| `ADMIN_PASSWORD`    | yes*     | Password used to sign in to the admin control room                 |
+| `AUTH_SECRET`       | no       | HMAC secret for session cookies (defaults to `ADMIN_PASSWORD`)     |
 | `MONGODB_DB`        | no       | Database name (defaults to `blog`)                                 |
 | `TRENDS_CRON_SECRET`| no       | Protects the trend-refresh endpoint when set                        |
 | `TRENDS_COUNT`      | no       | Number of drafts to generate (default `6`, 60% HN / 40% Trends)     |
 | `TRENDS_REBUILD`    | no       | Comma-separated slugs to overwrite with fresh content               |
-| `BLOG_URL`          | no       | Canonical blog base URL used by the trend pipeline                  |
+| `BLOG_URL`          | no       | Canonical blog base URL used by the trend pipeline                 |
+
+\* Required for admin login. On Vercel, add them (plus `AUTH_SECRET`) in **Project → Settings → Environment variables**, then redeploy or the running deployment keeps 401ing. The admin panel is guarded by a session cookie checked in `middleware.ts`.
 
 ## Scripts
 

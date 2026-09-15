@@ -24,7 +24,15 @@ export async function middleware(request: NextRequest) {
 
   if (!token || !(await verifySession(token))) {
     if (isPostsApi) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        {
+          status: 401,
+          headers: {
+            "x-auth-reason": token ? "invalid-session" : "no-session",
+          },
+        },
+      )
     }
     const loginUrl = new URL(LOGIN_PATH, request.url)
     loginUrl.searchParams.set("next", pathname)
